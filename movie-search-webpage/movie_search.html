@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.middle{
+margin-top:100px;
+text-align:center;
+margin-left:auto;
+margin-right:auto;
+display:block;
+}
+</style>
+</head>
+<body onload=form1.reset()>
+<div class="middle">
+<h4>Enter URL for highest grossing films list JSON file<h4>
+<form id="form1">
+	<input type="text" name="URL" id="text"> <br/><br/>
+	<input type="button" value="Submit Query" onclick="viewJSON(this.form)" style="background-color:white;">
+</form>
+</div>
+<script>
+
+//JSON Routine
+function viewJSON(what){
+
+var URL = what.URL.value;
+if(URL=="" || URL ==null){alert("URL field is empty")}
+//if (URL!="" && URL!="filmslist.json"){alert("JSON file does not exist")}
+  function loadJSON(url) {
+      if (window.XMLHttpRequest)
+      {// code for IE7+, Firefox, Chrome, Opera, Safari
+	   xmlhttp=new XMLHttpRequest();
+   } else {// code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");  }
+  xmlhttp.open("GET",url,false); // "synchronous"
+  try{
+  xmlhttp.send();}
+  catch(exception){if(exception.name == 'NetworkError'){
+  alert('JSON file could not be found');
+}}
+  jsonObj= JSON.parse(xmlhttp.responseText); 
+  return jsonObj;   }
+  var jsonObj = loadJSON(URL);
+  
+ if (window.ActiveXObject) //if IE, simply execute script (due to async prop).
+ {  if (jsonObj.parseError.errorCode != 0) {
+    var myErr = jsonObj.parseError;
+    generateError(jsonObj);
+    hWin = window.open("", "Error", "height=300,width=340");
+    hWin.document.write(html_text);
+  } else {  generateHTML(jsonObj);
+            hWin = window.open("", "Assignment4", "height=1200,width=1200");
+            hWin.document.write(html_text);   } 
+} else //else if FF, execute script once JSON object has loaded
+ {  flag=0;
+	jsonObj.onload=generateHTML(jsonObj);
+	if (flag==1){
+    hWin = window.open("", "Assignment4", "width=1100px,height=700px");
+    hWin.document.write(html_text);  } hWin.document.close();  }}
+
+	
+	
+	
+	
+//HTML Routine
+function generateHTML(jsonObj)   {
+		  root=jsonObj.DocumentElement; 
+          html_text="<html><head><title>Films List</title></head><body>";
+          html_text+="<table border='2'>"; 
+          films=jsonObj.Mainline.Table.Row; // an array of films
+		  if (films==null || films.length==0){alert("No Movies To  Display")}
+		  else{
+          filmNodeList=films[0];
+          html_text+="<tbody>"; 
+          html_text+="<tr>"; 
+          x=0;  y=0;
+	 // output the headers
+	 var header_keys =jsonObj.Mainline.Table.Header.Data;
+           for(i=0;i<header_keys.length;i++)           { 
+ 		header=header_keys[i];			       
+		html_text+="<th>"+header+"</th>";    			
+	}
+	html_text+="</tr>"; 
+// output out the values
+           for(i=0;i<films.length;i++) //do for all films (one per row)
+          {                 
+		filmNodeList=films[i]; //get properties of a film (an object)
+	                html_text+="<tr>";      //start a new row of the output table
+                          var film_keys = Object.keys(filmNodeList);
+                          for(j=0;j<film_keys.length;j++) 
+	              {
+                 	       prop = film_keys[j];
+		       if(film_keys[j]=="Logo")		
+		       {//handle images separately	
+				if(filmNodeList[prop]==null){html_text+="<td></td>"}
+				else{
+			   html_text+="<td> <img width=120px src='"+ filmNodeList[prop]+"'></td>"; 	   }   } 
+			   else if(film_keys[j]=="Hubs"){
+			   //html_text+="<td><ul><li>"+filmNodeList[prop].Hub.[0]+"</li><li>"+filmNodeList[prop].Hub[1]+"</li></ul></td>";
+			   html_text+="<td><ul>";
+				for (m=0;m<filmNodeList[prop].Hub.length;m++){
+				if(m==0){html_text+="<li><b>"+filmNodeList[prop].Hub[m]+"</b></li>";}
+				else{
+				html_text+="<li>"+filmNodeList[prop].Hub[m]+"</li>";}
+				}
+				html_text+="</ul></td>"; 
+			   } 
+			   else if (film_keys[j]=="HomePage"){
+			   if(filmNodeList[prop]!=null){html_text+="<td width=450px> <a href='"+filmNodeList[prop]+"'>"+filmNodeList[prop]+"</a></td>";}else{html_text+="<td width=450px></td> "}}
+			   else {						  
+				if(filmNodeList[prop]!=null){html_text+="<td>"+ filmNodeList[prop] +"</td>";}
+					else{html_text+="<td></td>"}
+		     } 	   		        
+	 } 		           
+	html_text+="</tr>";            
+}                            
+html_text+="</tbody>"; 
+ html_text+="</table>";           
+html_text+="</body></html>"; flag=1;  } }
+
+
+
+</script>
+</body>
+</html>
